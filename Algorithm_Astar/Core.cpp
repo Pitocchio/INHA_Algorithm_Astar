@@ -47,5 +47,4 @@ void CCore::Progress()
 
 void CCore::Release()
 {
-	CNodeMgr::GetInst()->Release();
 }

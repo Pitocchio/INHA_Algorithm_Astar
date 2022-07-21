@@ -10,3 +10,9 @@ enum class NODE_TYPE {
 	CLOSE,
 	TYPEEND_NODE
 };
+
+enum class DIR_TYPE {
+	PLUS,
+	MUL,
+	TYPEEND_DIR
+};

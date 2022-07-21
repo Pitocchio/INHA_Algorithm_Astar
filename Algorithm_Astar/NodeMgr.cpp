@@ -23,7 +23,12 @@ void CNodeMgr::Init()
 
 	// 알고리즘 구현 후, 마우스 입력으로 바꾸자
 	m_listTile[5][5]->Nodetype = NODE_TYPE::START;
-	m_listTile[21][23]->Nodetype = NODE_TYPE::END;
+	m_StartNode = m_listTile[5][5];
+
+	m_listTile[8][8]->Nodetype = NODE_TYPE::END;
+	m_EndNode = m_listTile[8][8];
+	m_iEndNode_row = 8;
+	m_iEndNode_col = 8;
 	
 	m_PQ.push(m_listTile[5][5]);
 }
@@ -31,47 +36,76 @@ void CNodeMgr::Init()
 void CNodeMgr::Update()
 {
 	
-	while (!m_PQ.empty()) 
+	if(!m_PQ.empty() && !bTest) 
 	{
-
 		Node* N = m_PQ.top(); 
 
-		if (N->Nodetype == NODE_TYPE::END)
-			break;
+		/*if (N->Nodetype == NODE_TYPE::END)
+			break;*/
 
-		Set_SurrNode(N);
+		Set_SurrNode(N);  // N 주변 8개 노드를 찾아 G, H, F와 NODETYPE을 세팅
 
+		N->Nodetype = NODE_TYPE::CLOSE; // N은 CLOSE
+		m_PQ.pop(); // N은 POP해서 빼줌
+
+		bTest = true;
 
 	}
-
 
 	
 }
 
-void CNodeMgr::Set_SurrNode(Node* N) // N 주변 8개 노드를 찾아 G와 H를 세팅
+void CNodeMgr::Set_SurrNode(Node* N)
 {
+	// Set the G
 	for (int i = 0; i < TILE_ROW; ++i)
 	{
 		for (int j = 0; j < TILE_COL; ++j)
 		{
 			if (m_listTile[i][j]->Num == N->Num)
 			{
-				m_listTile[i - 1][j]->G += 10;
-				m_listTile[i + 1][j]->G += 10;
-				m_listTile[i][j + 1]->G += 10;
-				m_listTile[i][j - 1]->G += 10;
+				Set_GHF(i - 1, j, DIR_TYPE::PLUS);
+				Set_GHF(i + 1, j, DIR_TYPE::PLUS);
+				Set_GHF(i, j + 1, DIR_TYPE::PLUS);
+				Set_GHF(i, j - 1, DIR_TYPE::PLUS);
 
-
-				m_listTile[i - 1][j + 1]->G += 14;
-				m_listTile[i + 1][j + 1]->G += 14;
-				m_listTile[i - 1][j - 1]->G += 14;
-				m_listTile[i + 1][j - 1]->G += 14;
-
+				Set_GHF(i - 1, j + 1, DIR_TYPE::MUL);
+				Set_GHF(i + 1, j + 1, DIR_TYPE::MUL);
+				Set_GHF(i - 1, j - 1, DIR_TYPE::MUL);
+				Set_GHF(i + 1, j - 1, DIR_TYPE::MUL);
 
 			}
 		}
 	}
 
+
+}
+
+void CNodeMgr::Set_GHF(int row, int col, DIR_TYPE type)
+{
+	if (type == DIR_TYPE::PLUS)
+	{
+		m_listTile[row][col]->G += 10;
+	}
+	else if (type == DIR_TYPE::MUL)
+	{
+		m_listTile[row][col]->G += 14;
+	}
+
+	m_listTile[row][col]->H = Get_H(row, col);
+	m_listTile[row][col]->F = m_listTile[row][col]->G + m_listTile[row][col]->H;
+	m_listTile[row][col]->Nodetype = NODE_TYPE::OPEN;
+}
+
+int CNodeMgr::Get_H(int row, int col)
+{
+	int iNumLine;
+	int iNumCross;
+
+	iNumCross = abs(col - m_iEndNode_col);
+	iNumLine = abs(row - m_iEndNode_row) - iNumCross;
+
+	return (iNumLine * 10) + (iNumCross * 14);
 
 }
 
@@ -153,6 +187,12 @@ void CNodeMgr::Render(HDC hdc)
 				DeleteObject(hbr);
 			}
 
+
+
+			// Text 출력
+			if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL || m_listTile[i][j]->Nodetype == NODE_TYPE::END)
+				continue;
+			
 			TCHAR chG[120];
 			_itow(m_listTile[i][j]->G, chG, 10);
 			TCHAR chH[120];
@@ -171,6 +211,7 @@ void CNodeMgr::Render(HDC hdc)
 			SetTextAlign(hdc, TA_BOTTOM|TA_CENTER);
 			TextOut(hdc, m_listTile[i][j]->Pos.x + (TILE_CWIDTH * 0.5), m_listTile[i][j]->Pos.y+TILE_CHEIGHT, chF, _tcslen(chF));
 
+			
 		}
 	}
 }
