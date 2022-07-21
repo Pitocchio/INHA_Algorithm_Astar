@@ -45,9 +45,6 @@
     <ClInclude Include="Define.h">
       <Filter>소스 파일\01.My</Filter>
     </ClInclude>
-    <ClInclude Include="Enum.h">
-      <Filter>소스 파일\01.My</Filter>
-    </ClInclude>
     <ClInclude Include="Struct.h">
       <Filter>소스 파일\01.My</Filter>
     </ClInclude>
@@ -59,6 +56,9 @@
     </ClInclude>
     <ClInclude Include="NodeMgr.h">
       <Filter>소스 파일\03.Astar</Filter>
+    </ClInclude>
+    <ClInclude Include="Enum.h">
+      <Filter>소스 파일\01.My</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

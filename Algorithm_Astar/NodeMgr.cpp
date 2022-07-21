@@ -5,6 +5,8 @@ CNodeMgr* CNodeMgr::m_pInst = nullptr;
 
 void CNodeMgr::Init()
 {
+	m_isReach = false;
+
 	// 전체 타일 세팅 
 	int n = 0;
 	
@@ -25,63 +27,60 @@ void CNodeMgr::Init()
 	m_listTile[5][5]->Nodetype = NODE_TYPE::START;
 	m_StartNode = m_listTile[5][5];
 
-	m_listTile[8][8]->Nodetype = NODE_TYPE::END;
-	m_EndNode = m_listTile[8][8];
-	m_iEndNode_row = 8;
-	m_iEndNode_col = 8;
+	m_listTile[11][14]->Nodetype = NODE_TYPE::END;
+	m_EndNode = m_listTile[11][14];
+	m_iEndNode_row = 11;
+	m_iEndNode_col = 14;
 	
 	m_PQ.push(m_listTile[5][5]);
 }
 
 void CNodeMgr::Update()
 {
-	
-	if(!m_PQ.empty() && !bTest) 
+	if(!m_PQ.empty() && !m_isReach)
 	{
 		Node* N = m_PQ.top(); 
 
-		/*if (N->Nodetype == NODE_TYPE::END)
-			break;*/
+		cout << N->F << endl;
 
-		Set_SurrNode(N);  // N 주변 8개 노드를 찾아 G, H, F와 NODETYPE을 세팅
+		if (N->Nodetype == NODE_TYPE::END)
+		{
+			m_isReach = true;
+			return;
+		}
 
-		N->Nodetype = NODE_TYPE::CLOSE; // N은 CLOSE
-		m_PQ.pop(); // N은 POP해서 빼줌
+		// N 주변 8개 노드를 찾아 G, H, F와 NODETYPE을 세팅, 그리고 우선 순위 큐에 넣어준다
+		Set_SurrNode(N); 
 
-		bTest = true;
-
+		// N을 CLOSE하고 POP 해줌
+		N->Nodetype = NODE_TYPE::CLOSE; 
+		m_PQ.pop(); 
 	}
-
-	
 }
 
 void CNodeMgr::Set_SurrNode(Node* N)
 {
-	// Set the G
 	for (int i = 0; i < TILE_ROW; ++i)
 	{
 		for (int j = 0; j < TILE_COL; ++j)
 		{
 			if (m_listTile[i][j]->Num == N->Num)
 			{
-				Set_GHF(i - 1, j, DIR_TYPE::PLUS);
-				Set_GHF(i + 1, j, DIR_TYPE::PLUS);
-				Set_GHF(i, j + 1, DIR_TYPE::PLUS);
-				Set_GHF(i, j - 1, DIR_TYPE::PLUS);
+				Set_GHFandPush_PQ(i - 1, j, DIR_TYPE::PLUS);
+				Set_GHFandPush_PQ(i + 1, j, DIR_TYPE::PLUS);
+				Set_GHFandPush_PQ(i, j + 1, DIR_TYPE::PLUS);
+				Set_GHFandPush_PQ(i, j - 1, DIR_TYPE::PLUS);
 
-				Set_GHF(i - 1, j + 1, DIR_TYPE::MUL);
-				Set_GHF(i + 1, j + 1, DIR_TYPE::MUL);
-				Set_GHF(i - 1, j - 1, DIR_TYPE::MUL);
-				Set_GHF(i + 1, j - 1, DIR_TYPE::MUL);
-
+				Set_GHFandPush_PQ(i - 1, j + 1, DIR_TYPE::MUL);
+				Set_GHFandPush_PQ(i + 1, j + 1, DIR_TYPE::MUL);
+				Set_GHFandPush_PQ(i - 1, j - 1, DIR_TYPE::MUL);
+				Set_GHFandPush_PQ(i + 1, j - 1, DIR_TYPE::MUL);
 			}
 		}
 	}
-
-
 }
 
-void CNodeMgr::Set_GHF(int row, int col, DIR_TYPE type)
+void CNodeMgr::Set_GHFandPush_PQ(int row, int col, DIR_TYPE type)
 {
 	if (type == DIR_TYPE::PLUS)
 	{
@@ -94,7 +93,19 @@ void CNodeMgr::Set_GHF(int row, int col, DIR_TYPE type)
 
 	m_listTile[row][col]->H = Get_H(row, col);
 	m_listTile[row][col]->F = m_listTile[row][col]->G + m_listTile[row][col]->H;
-	m_listTile[row][col]->Nodetype = NODE_TYPE::OPEN;
+
+	if (m_listTile[row][col]->Nodetype != NODE_TYPE::START 
+		&& m_listTile[row][col]->Nodetype != NODE_TYPE::CLOSE 
+		&& m_listTile[row][col]->Nodetype != NODE_TYPE::END)
+	{
+		m_listTile[row][col]->Nodetype = NODE_TYPE::OPEN;
+	}
+
+	if (m_listTile[row][col]->Nodetype != NODE_TYPE::START
+		&& m_listTile[row][col]->Nodetype != NODE_TYPE::CLOSE)
+	{
+		m_PQ.push(m_listTile[row][col]);
+	}
 }
 
 int CNodeMgr::Get_H(int row, int col)
@@ -102,11 +113,21 @@ int CNodeMgr::Get_H(int row, int col)
 	int iNumLine;
 	int iNumCross;
 
-	iNumCross = abs(col - m_iEndNode_col);
-	iNumLine = abs(row - m_iEndNode_row) - iNumCross;
+	int a = abs(row - m_iEndNode_row);
+	int b = abs(col - m_iEndNode_col);
+	
+	if (a > b)
+	{
+		iNumLine = a - b;
+		iNumCross = b;
+	}
+	else
+	{
+		iNumLine = b - a;
+		iNumCross = a;
+	}
 
 	return (iNumLine * 10) + (iNumCross * 14);
-
 }
 
 
@@ -190,7 +211,8 @@ void CNodeMgr::Render(HDC hdc)
 
 
 			// Text 출력
-			if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL || m_listTile[i][j]->Nodetype == NODE_TYPE::END)
+			//if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL || m_listTile[i][j]->Nodetype == NODE_TYPE::END)
+			if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL)
 				continue;
 			
 			TCHAR chG[120];
@@ -203,13 +225,13 @@ void CNodeMgr::Render(HDC hdc)
 			SetBkMode(hdc, TRANSPARENT);
 
 			SetTextAlign(hdc, TA_LEFT);
-			TextOut(hdc, m_listTile[i][j]->Pos.x + 2, m_listTile[i][j]->Pos.y, chG, _tcslen(chG));
+			TextOut(hdc, int(m_listTile[i][j]->Pos.x + 2), int(m_listTile[i][j]->Pos.y), chG, _tcslen(chG));
 
 			SetTextAlign(hdc, TA_RIGHT);
-			TextOut(hdc, m_listTile[i][j]->Pos.x + (TILE_CWIDTH) - 2, m_listTile[i][j]->Pos.y, chH, _tcslen(chH));
+			TextOut(hdc, int(m_listTile[i][j]->Pos.x + (TILE_CWIDTH) - 2), int(m_listTile[i][j]->Pos.y), chH, _tcslen(chH));
 
 			SetTextAlign(hdc, TA_BOTTOM|TA_CENTER);
-			TextOut(hdc, m_listTile[i][j]->Pos.x + (TILE_CWIDTH * 0.5), m_listTile[i][j]->Pos.y+TILE_CHEIGHT, chF, _tcslen(chF));
+			TextOut(hdc, int(m_listTile[i][j]->Pos.x + (TILE_CWIDTH * 0.5)), int(m_listTile[i][j]->Pos.y+TILE_CHEIGHT), chF, _tcslen(chF));
 
 			
 		}
@@ -218,7 +240,13 @@ void CNodeMgr::Render(HDC hdc)
 
 void CNodeMgr::Release()
 {
-	delete[] m_listTile;
+	for (int i = 0; i < TILE_ROW; ++i)
+	{
+		for (int j = 0; j < TILE_COL; ++j)
+		{
+			delete m_listTile[i][j];
+		}
+	}
 }
 
 //

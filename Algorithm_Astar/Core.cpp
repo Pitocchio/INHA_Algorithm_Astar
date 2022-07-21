@@ -42,9 +42,14 @@ void CCore::Progress()
 	Rectangle(m_Hbitdc, -1, -1, m_RC.right + 1, m_RC.bottom + 1); 
 	CNodeMgr::GetInst()->Render(m_Hbitdc);
 	BitBlt(m_Hdc, 0, 0, m_RC.right, m_RC.bottom, m_Hbitdc, 0, 0, SRCCOPY); 
+
+	Sleep(4000);
+
 	// >> 
 }
 
 void CCore::Release()
 {
+	CNodeMgr::GetInst()->Release();
+	CNodeMgr::GetInst()->DestroyInst();
 }

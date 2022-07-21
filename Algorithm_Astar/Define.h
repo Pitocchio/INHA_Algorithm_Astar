@@ -4,7 +4,7 @@
 
 // << : Window
 #define WINDOW_WIDTH 1800
-#define WINDOW_HEIGHT 1100
+#define WINDOW_HEIGHT 1050
 // >> :
 
 

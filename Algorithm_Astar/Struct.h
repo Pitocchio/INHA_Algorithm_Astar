@@ -1,17 +1,18 @@
 #pragma once
 #include <windef.h>
-#include <Enum.h>
+#include "Enum.h"
 
 typedef struct Node
 {
-	POINT Pos = { 0,0 };
+	int Num = 0;
+
+	NODE_TYPE Nodetype = NODE_TYPE::NORMAL;
 
 	int G = 0;
 	int H = 0;
 	int F = 0;
-	int Num = 0;
 
-	NODE_TYPE Nodetype = NODE_TYPE::NORMAL;
+	POINT Pos = { 0,0 };
 	
 }Node;
 

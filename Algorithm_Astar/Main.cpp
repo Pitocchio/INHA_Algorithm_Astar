@@ -149,6 +149,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case VK_ESCAPE:
+
+            CCore::GetInst()->Release();
+            CCore::GetInst()->DestroyInst();
+
             PostQuitMessage(0);
             break;
         }
