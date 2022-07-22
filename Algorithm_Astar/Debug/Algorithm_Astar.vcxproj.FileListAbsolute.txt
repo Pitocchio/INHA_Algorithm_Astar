@@ -1,1 +1,2 @@
 C:\Users\chanjun\Documents\INHA_Algorithm_Astar\Algorithm_Astar\Debug\Algorithm_Astar.exe
+D:\Algorithm_Astar\Algorithm_Astar\Debug\Algorithm_Astar.exe

@@ -14,9 +14,10 @@ public:
 public:
 
 	void Set_SurrNode(Node* N);
-	void Set_GHFandPush_PQ(int row, int col, DIR_TYPE type);
+	void Set_GHFandPush_PQ(Node* N, int row, int col, DIR_TYPE type);
 
 	int Get_H(int row, int col);
+	int Get_G(Node* N, int row, int col, DIR_TYPE type);
 
 
 
@@ -32,6 +33,8 @@ private:
 	Node *m_StartNode;
 	Node *m_EndNode;
 
-	priority_queue <Node*, vector<Node*>, cmp> m_PQ;
-};
 
+
+	priority_queue <Node*, vector<Node*>, cmp> m_PQ;
+	
+};

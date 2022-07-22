@@ -23,6 +23,7 @@
 #include <stack>
 #include <stdlib.h>
 #include <queue>
+#include <set>
 
 #pragma comment(lib, "Msimg32.lib") 
 

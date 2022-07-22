@@ -1,1 +1,4 @@
-﻿  Algorithm_Astar.vcxproj -> C:\Users\chanjun\Documents\INHA_Algorithm_Astar\Algorithm_Astar\Debug\Algorithm_Astar.exe
+﻿  Main.cpp
+  NodeMgr.cpp
+D:\Algorithm_Astar\Algorithm_Astar\Struct.h(30): warning C4715: 'cmp::operator()': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  Algorithm_Astar.vcxproj -> D:\Algorithm_Astar\Algorithm_Astar\Debug\Algorithm_Astar.exe
