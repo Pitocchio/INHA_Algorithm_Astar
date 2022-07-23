@@ -11,7 +11,7 @@
 #include <tchar.h>
 
 
-// << : User
+// << : My
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -28,5 +28,4 @@
 #pragma comment(lib, "Msimg32.lib") 
 
 using namespace std;
-
 // >> :

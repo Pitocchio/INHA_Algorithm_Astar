@@ -8,6 +8,7 @@ enum class NODE_TYPE {
 	OBSTACLE,
 	OPEN,
 	CLOSE,
+	ROUTE,
 	TYPEEND_NODE
 };
 

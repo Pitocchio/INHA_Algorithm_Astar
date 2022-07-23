@@ -14,13 +14,12 @@ typedef struct Node
 
 	POINT Pos = { 0,0 };
 
-
 }Node;
 
 
 typedef struct cmp
 {
-	//오름차순 정렬 (return 값이 true라면 swap을 진행한다)
+	// 우선 순위 큐 정렬 => 오름차순 정렬 (return 값이 true라면 swap을 진행한다)
 	bool operator() (Node* a, Node* b)
 	{
 		if (a->F != b->F)

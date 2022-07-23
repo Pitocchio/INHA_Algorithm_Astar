@@ -9,8 +9,8 @@ public: // LifeCycle
 	void Progress();
 	void Release();
 
-public:
-	HWND Get_Hwnd() { return m_Hwnd; }
+public: // Mehod
+	HWND Get_Hwnd() const { return m_Hwnd; }
 
 private: // Variables
 	RECT m_RC;

@@ -49,7 +49,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // << :
     CCore::GetInst()->Init(g_hWnd);
-
     while (true)
     {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -67,7 +66,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             CCore::GetInst()->Progress();
         }
     }
-
     CCore::GetInst()->Release();
     CCore::GetInst()->DestroyInst();
     // >> 
@@ -145,6 +143,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hWnd, &ps);
         }
         break;
+    // << :
     case WM_KEYDOWN:
         switch (wParam)
         {
@@ -152,10 +151,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PostQuitMessage(0);
             break;
         case VK_SPACE:
-            //CCore::GetInst()->Progress();
+            CCore::GetInst()->Progress();
             break;
         }
         break;
+    // >>
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

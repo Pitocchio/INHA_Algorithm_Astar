@@ -5,7 +5,8 @@ CNodeMgr* CNodeMgr::m_pInst = nullptr;
 
 void CNodeMgr::Init()
 {
-	m_isReach = false;
+	m_bReach = false;
+	m_bRouteSet = false;
 
 	// 전체 타일 세팅 
 	int n = 0;
@@ -34,10 +35,10 @@ void CNodeMgr::Init()
 		m_PQ.push(m_listTile[4][4]);
 
 		// END
-		m_listTile[17][14]->Nodetype = NODE_TYPE::END;
-		m_EndNode = m_listTile[17][14];
+		m_listTile[17][19]->Nodetype = NODE_TYPE::END;
+		m_EndNode = m_listTile[17][19];
 		m_iEndNode_row = 17;
-		m_iEndNode_col = 14;
+		m_iEndNode_col = 19;
 
 		// OBSTACLE
 		m_listTile[5][7]->Nodetype = NODE_TYPE::OBSTACLE;
@@ -47,24 +48,55 @@ void CNodeMgr::Init()
 		m_listTile[7][7]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[7][6]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[7][5]->Nodetype = NODE_TYPE::OBSTACLE;
+
+		m_listTile[11][13]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][12]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][11]->Nodetype = NODE_TYPE::OBSTACLE;
+
+		m_listTile[11][10]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][9]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][8]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][7]->Nodetype = NODE_TYPE::OBSTACLE;
+
 		m_listTile[11][6]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[11][5]->Nodetype = NODE_TYPE::OBSTACLE;
+
+
 		m_listTile[10][4]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[10][7]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[14][11]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[14][12]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[14][13]->Nodetype = NODE_TYPE::OBSTACLE;
 		m_listTile[15][14]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[14][6]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[13][7]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[12][8]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][9]->Nodetype = NODE_TYPE::OBSTACLE;
+
+
+	
+		m_listTile[17][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[16][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[15][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[14][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[13][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[12][16]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[11][16]->Nodetype = NODE_TYPE::OBSTACLE;
+
+		m_listTile[17][11]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[17][12]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[17][13]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[17][14]->Nodetype = NODE_TYPE::OBSTACLE;
+		m_listTile[17][15]->Nodetype = NODE_TYPE::OBSTACLE;
+
 	}
 }
 
 
-// 장애물 처리
-// 아예 현 노드를 닫아버린다
 
 void CNodeMgr::Update()
 {
-	if(!m_PQ.empty() && !m_isReach)
+	if(!m_PQ.empty() && !m_bReach)
 	{
 		/*int i = 0;
 		while (!m_PQ.empty())
@@ -80,13 +112,15 @@ void CNodeMgr::Update()
 		if (m_PQ.top()->Nodetype == NODE_TYPE::END)
 		{
 			cout << "도착했습니다~\n";
-			m_isReach = true;
+			m_bReach = true;
 			return;
 		}
 
 		// N을 CLOSE 처리
-		if(m_PQ.top()->Nodetype != NODE_TYPE::START)
+		if (m_PQ.top()->Nodetype != NODE_TYPE::START)
+		{
 			m_PQ.top()->Nodetype = NODE_TYPE::CLOSE;
+		}
 
 		// 함수 들어가서 우선 pop
 		// 우선 순위 큐 탑 주변 8개 노드를 찾아 
@@ -124,6 +158,9 @@ void CNodeMgr::Set_SurrNode(Node* N)
 
 void CNodeMgr::Set_GHFandPush_PQ(Node* N, int row, int col, DIR_TYPE type)
 {
+	if ((row - 1) < 0 || (col - 1) < 0 || (row + 1) > 20 || (col + 1) > 20)
+		return;
+
 	// 1차 필터링 (시작노드, 닫힌 노드, 장애물노드는 데이터를 갱신하지 않는다) // edit
 	if (m_listTile[row][col]->Nodetype == NODE_TYPE::START
 		|| m_listTile[row][col]->Nodetype == NODE_TYPE::CLOSE
@@ -136,22 +173,41 @@ void CNodeMgr::Set_GHFandPush_PQ(Node* N, int row, int col, DIR_TYPE type)
 	int preH = m_listTile[row][col]->H; // 이전 H값
 	int preF = m_listTile[row][col]->F; // 이전 F값
 
-	/*m_listTile[row][col]->G = Get_G(N, row, col, type);
-	m_listTile[row][col]->H = Get_H(row, col);
-	m_listTile[row][col]->F = m_listTile[row][col]->G + m_listTile[row][col]->H;*/
-
 	int curG = Get_G(N, row, col, type);
 	int curH = Get_H(row, col);
 	int curF = curG + curH;
 
 	if (preF > curF) // 2차 필터링 걸린다면 
 	{
-		m_listTile[row][col]->G = curG;
-		m_listTile[row][col]->H = curH;
-		m_listTile[row][col]->F = curF;
-
+		list <Node*> templist;
+		bool bSet = false;
 		// 삭제 후 다시 푸시
-		m_PQ.push(m_listTile[row][col]);
+		while (!m_PQ.empty())
+		{
+			if (m_PQ.top()->Num == m_listTile[row][col]->Num)
+			{
+		
+				m_listTile[row][col]->G = curG;
+				m_listTile[row][col]->H = curH;
+				m_listTile[row][col]->F = curF;
+
+				m_PQ.pop();
+				m_PQ.push(m_listTile[row][col]);
+
+				while (!templist.empty())
+				{
+					m_PQ.push(templist.front());
+					templist.pop_front();
+					bSet = true;
+				}
+			}
+
+			if (bSet)
+				break;
+			templist.push_back(m_PQ.top());
+			m_PQ.pop();
+		}
+		
 	}
 	else if ((preF < curF) && (m_listTile[row][col]->F == 0)) // 2차 필터링 안걸리고, 노드가 비어있다면
 	{
@@ -169,6 +225,8 @@ void CNodeMgr::Set_GHFandPush_PQ(Node* N, int row, int col, DIR_TYPE type)
 		m_listTile[row][col]->G = preG;
 		m_listTile[row][col]->H = preH;
 		m_listTile[row][col]->F = preF;
+
+
 	}
 }
 
@@ -176,7 +234,6 @@ int CNodeMgr::Get_H(int row, int col)
 {
 	int iNumLine;
 	int iNumCross;
-
 	int a = abs(row - m_iEndNode_row);
 	int b = abs(col - m_iEndNode_col);
 	
@@ -206,13 +263,7 @@ int CNodeMgr::Get_G(Node* N, int row, int col, DIR_TYPE type)
 	{
 		tempG = N->G + 14;
 	}
-
 	return tempG;
-}
-
-
-void CNodeMgr::LateUpdate()
-{
 }
 
 void CNodeMgr::Render(HDC hdc)
@@ -298,11 +349,18 @@ void CNodeMgr::Render(HDC hdc)
 				hbr = (HBRUSH)::SelectObject(hdc, hbrOld);
 				DeleteObject(hbr);
 			}
+			else if (m_listTile[i][j]->Nodetype == NODE_TYPE::ROUTE)
+			{
+				HBRUSH hbr = (HBRUSH)CreateSolidBrush(RGB(100, 100, 100));
+				HBRUSH hbrOld = (HBRUSH)SelectObject(hdc, hbr);
 
+				Rectangle(hdc, m_listTile[i][j]->Pos.x, m_listTile[i][j]->Pos.y,
+					m_listTile[i][j]->Pos.x + TILE_CWIDTH, m_listTile[i][j]->Pos.y + TILE_CHEIGHT);
 
+				hbr = (HBRUSH)::SelectObject(hdc, hbrOld);
+				DeleteObject(hbr);
+			}
 
-			// Text 출력
-			//if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL || m_listTile[i][j]->Nodetype == NODE_TYPE::END)
 			if (m_listTile[i][j]->Nodetype == NODE_TYPE::NORMAL)
 				continue;
 			
@@ -339,17 +397,3 @@ void CNodeMgr::Release()
 		}
 	}
 }
-
-//
-//bool CNodeMgr::Check_isSetStartEnd()
-//{
-//	POINT pt;
-//	GetCursorPos(&pt);
-//	ScreenToClient(CCore::GetInst()->Get_Hwnd(), &pt);
-//
-//	int row = pt.y / TILE_COL;
-//	int col = pt.x / TILE_ROW;
-//
-//	m_listTile[row][col]->Nodetype = NODE_TYPE::START;
-//
-//}
